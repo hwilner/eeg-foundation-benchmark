@@ -15,21 +15,29 @@ This is **Paper 1** of the clinical EEG foundation-model series (4 papers). It i
 | Benchmark across downstream tasks: TUSZ seizure detection, TUAB abnormality, Sleep-EDF staging, CHB-MIT validation | Cross-task leaderboard vs. task-specific baselines. |
 | Release evaluation harness | Reused by Papers 2–4. |
 
-**Current status:** planning stage; TUEG license form to be submitted; no experiments have been run.
+**Current status:** implementation stage; the SSL framework (channel-masked reconstruction pretraining, linear-probe/fine-tune evaluation, benchmark runner) is implemented and validated on synthetic EEG; TUEG license form to be submitted; no corpus experiments have been run.
 
 ## What is included
 
 | Path | Contents |
 |---|---|
-| `src/` | Preprocessing, SSL training, and evaluation utilities. |
-| `tests/` | Synthetic signal tests. |
-| `docs/` | Research status, methods scope, and contribution guidance. |
+| `src/eegfm/data.py` | EEG window dataset interface; channel-set standardization (canonical 10-20 montage harmonization). |
+| `src/eegfm/simulate.py` | Synthetic EEG generator with planted class-discriminative cross-channel phase-coupling patterns. |
+| `src/eegfm/models.py` | Compact transformer encoder (channel×time patch embedding, positional encoding), linear probe head, channel-masked reconstruction wrapper. |
+| `src/eegfm/pretrain.py` | MAE-style channel-masked reconstruction SSL pretraining loop. |
+| `src/eegfm/finetune.py` | Linear-probe (frozen encoder) and fine-tune (unfrozen) evaluation. |
+| `src/eegfm/benchmark.py` | Benchmark runner: SSL-pretrained probe vs. from-scratch supervised baseline; AUROC/AUPRC results table. |
+| `tests/` | Synthetic-signal tests: forward shapes, pretraining loss reduction, pretrained probe beats from-scratch baseline. |
+| `docs/` | Research status, methods scope, data access (TUH DUA) guidance, and contribution guidance. |
 
 ## Use and validation
 
 ```bash
+pip install -e ".[dev]"
 python -m pytest -q
 ```
+
+All tests run on CPU in under a minute using synthetic signals; no corpus access is required. See [docs/DATA_ACCESS.md](docs/DATA_ACCESS.md) for TUH EEG Corpus access (free for research, signed DUA with Temple University required).
 
 ## Keywords
 
@@ -38,3 +46,5 @@ EEG, foundation models, self-supervised learning, seizure detection, clinical ne
 ## Documentation
 
 - [Introduction for new readers](docs/INTRODUCTION.md)
+- [TUH EEG Corpus data access](docs/DATA_ACCESS.md)
+- [Contributing](CONTRIBUTING.md)
