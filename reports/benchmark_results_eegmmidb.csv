@@ -1,0 +1,3 @@
+method,auroc,auprc
+ssl-pretrained + linear-probe,0.7340676632572777,0.6151870942239482
+from-scratch supervised,0.918174665617624,0.8802114482867268
