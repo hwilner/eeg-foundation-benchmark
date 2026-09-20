@@ -3,6 +3,7 @@
 from .data import CANONICAL_CHANNELS, EEGWindowDataset, standardize_channels
 from .models import EEGTransformerEncoder, LinearProbe, MaskedReconstructionModel
 from .simulate import generate_synthetic_eeg
+from . import tuh
 
 __all__ = [
     "CANONICAL_CHANNELS",
@@ -12,6 +13,7 @@ __all__ = [
     "LinearProbe",
     "MaskedReconstructionModel",
     "generate_synthetic_eeg",
+    "tuh",
 ]
 
 __version__ = "0.1.0"
