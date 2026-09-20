@@ -20,6 +20,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+edf = ["pyedflib"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
