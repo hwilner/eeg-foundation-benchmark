@@ -15,7 +15,7 @@ This is **Paper 1** of the clinical EEG foundation-model series (4 papers). It i
 | Benchmark across downstream tasks: TUSZ seizure detection, TUAB abnormality, Sleep-EDF staging, CHB-MIT validation | Cross-task leaderboard vs. task-specific baselines. |
 | Release evaluation harness | Reused by Papers 2–4. |
 
-**Current status:** implementation stage; the SSL framework (channel-masked reconstruction pretraining, linear-probe/fine-tune evaluation, benchmark runner) is implemented and validated on synthetic EEG; TUEG license form to be submitted; no corpus experiments have been run.
+**Current status:** implementation stage; the SSL framework (channel-masked reconstruction pretraining, linear-probe/fine-tune evaluation, benchmark runner) is implemented and validated on synthetic EEG; the corpus staging pipeline (`eegfm.tuh` + `scripts/`) is implemented and validated end-to-end on **real public EEG** (PhysioNet eegmmidb, open access — see `reports/`); TUEG license form to be submitted; no TUH corpus experiments have been run.
 
 ## What is included
 
@@ -27,7 +27,12 @@ This is **Paper 1** of the clinical EEG foundation-model series (4 papers). It i
 | `src/eegfm/pretrain.py` | MAE-style channel-masked reconstruction SSL pretraining loop. |
 | `src/eegfm/finetune.py` | Linear-probe (frozen encoder) and fine-tune (unfrozen) evaluation. |
 | `src/eegfm/benchmark.py` | Benchmark runner: SSL-pretrained probe vs. from-scratch supervised baseline; AUROC/AUPRC results table. |
-| `tests/` | Synthetic-signal tests: forward shapes, pretraining loss reduction, pretrained probe beats from-scratch baseline. |
+| `src/eegfm/tuh.py` | TUH (TUEG/TUAB/TUSZ) EDF staging: channel-label normalization to the canonical montage, resampling, windowing, integrity manifest; raises a clear access error when the DUA-gated corpus is absent. Includes a credential-free public download path (PhysioNet eegmmidb, ODC-BY). |
+| `scripts/prepare_tueg.py` | One-command corpus staging: EDF tree → `windows.npz` + `manifest.csv` (`--raw-root` for TUH, `--public-demo` for eegmmidb). |
+| `scripts/run_pretrain.py` | One-command SSL pretraining on staged windows; saves `encoder.pt` + loss history. |
+| `scripts/run_benchmark.py` | One-command benchmark on staged labeled windows (`--public-demo-task`: eyes-open vs eyes-closed on eegmmidb) or synthetic data. |
+| `tests/` | Synthetic-signal tests: forward shapes, pretraining loss reduction, pretrained probe beats from-scratch baseline; EDF staging tests on synthetic EDF fixtures. |
+| `reports/` | Small derived results from the public-data validation run (eegmmidb): pretraining loss history and benchmark table. |
 | `docs/` | Research status, methods scope, data access (TUH DUA) guidance, and contribution guidance. |
 
 ## Use and validation
@@ -38,6 +43,26 @@ python -m pytest -q
 ```
 
 All tests run on CPU in under a minute using synthetic signals; no corpus access is required. See [docs/DATA_ACCESS.md](docs/DATA_ACCESS.md) for TUH EEG Corpus access (free for research, signed DUA with Temple University required).
+
+## One-command pipeline
+
+With TUH access (after DUA approval):
+
+```bash
+pip install -e ".[dev,edf]"   # EDF reading uses pyedflib (or mne)
+python scripts/prepare_tueg.py --raw-root /path/to/tuh_eeg --out data/tueg_windows
+python scripts/run_pretrain.py --windows data/tueg_windows/windows.npz
+```
+
+Credential-free validation on real public EEG (PhysioNet eegmmidb):
+
+```bash
+python scripts/prepare_tueg.py --public-demo --out data/demo_windows
+python scripts/run_pretrain.py --windows data/demo_windows/windows.npz
+python scripts/run_benchmark.py --public-demo-task
+```
+
+The public-demo benchmark classifies baseline eyes-open vs eyes-closed windows (eegmmidb runs R01/R02, 2 subjects, 120 windows, 19 canonical channels); the latest run is in `reports/`.
 
 ## Keywords
 
