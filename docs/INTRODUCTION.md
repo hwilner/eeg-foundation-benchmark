@@ -2,6 +2,8 @@
 
 **Series note:** This is **Paper 1 of 4** in the clinical EEG foundation-model series. It is the first paper and does not build on any former paper. Papers 2 (seizure forecasting), 3 (clinical risk detection), and 4 (fairness/generalizability audit) all build on this paper's encoder and evaluation harness.
 
+**Concept figure:** the pipeline of this paper — raw clinical EEG (TUEG) → harmonized preprocessing → self-supervised transformer encoder (masked channel reconstruction + contrastive objectives) → TUAB/TUSZ/TUEV downstream tasks, all scored under one unified benchmark harness. See [figures/concept_figure.md](figures/concept_figure.md) for a faithful Mermaid rendering (the FigForge/NeurIPS-style PNG could not be committed with the current text-only tooling; the Mermaid version depicts the identical pipeline).
+
 ## Background
 
 Electroencephalography (EEG) is the workhorse of clinical neurophysiology. Routinely acquired at the bedside, in epilepsy monitoring units, and in outpatient clinics, it captures electrical brain activity with millisecond resolution at a fraction of the cost of any neuroimaging modality. Yet its interpretation remains a profound bottleneck: reading an EEG requires years of fellowship training, inter-rater agreement among experts is modest, and the global shortage of clinical neurophysiologists means that many recordings are interpreted late or not at all. Automating even part of this workflow — triage, abnormality flagging, seizure detection, event marking — would have immediate clinical value.
