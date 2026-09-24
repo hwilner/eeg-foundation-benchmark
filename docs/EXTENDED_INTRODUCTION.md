@@ -29,41 +29,41 @@ Everything below uses only these ideas. Each is defined in plain words
 with a tiny example; the formal symbol is just shorthand for the words.
 
 - **Variable** — a letter that stands in for a number we don't want to
-  fix yet. If we write "spikiness = 7," the word (or the letter $x$) is
+  fix yet. If we write "spikiness = 7," the word (or the letter $`x`$) is
   the variable and 7 is its value.
 - **Function** — a machine that turns one number into another by a fixed
-  rule. Written $f(x)$: put in $x$, get out $f(x)$. Example: if
-  $f(x) = 2x$, then $f(3) = 6$.
+  rule. Written $`f(x)`$: put in $`x`$, get out $`f(x)`$. Example: if
+  $`f(x) = 2x`$, then $`f(3) = 6`$.
 - **Vector / point** — a short list of numbers treated as one object,
-  read as coordinates of a point. The window $(0, 3, 0)$ is a vector of
+  read as coordinates of a point. The window $`(0, 3, 0)`$ is a vector of
   length 3, i.e. the point 0 right, 3 up, 0 deep.
 - **Distance** — how far apart two points are, computed by subtracting
   matching coordinates, squaring, adding, and taking the square root.
-  Between $(0,3,0)$ and $(0,2,0)$: $\sqrt{0^2 + 1^2 + 0^2} = 1$.
+  Between $`(0,3,0)`$ and $`(0,2,0)`$: $`\sqrt{0^2 + 1^2 + 0^2} = 1`$.
 - **Probability as a fraction of cases** — count the cases where the
   thing happens, divide by all cases. If 18 of 20 pairs are won, the
-  win probability is $18/20 = 0.9$.
+  win probability is $`18/20 = 0.9`$.
 - **log2 (logarithm base 2)** — "how many times do I halve to reach 1?"
   or equivalently "how many yes/no questions to find one option among
-  $n$?" $\log_2(4) = 2$ because 4 options need exactly 2 questions.
+  $`n`$?" $`\log_2(4) = 2`$ because 4 options need exactly 2 questions.
 - **Entropy** — the average number of yes/no questions needed to pin
   down a random symbol, in bits. Uniform over 4 states costs
-  $\log_2(4) = 2$ bits; a fully predictable symbol costs 0 bits.
+  $`\log_2(4) = 2`$ bits; a fully predictable symbol costs 0 bits.
 - **Mutual information** — how many of the questions about one channel
   are already answered by knowing another. Identical channels: all of
   them (1 bit for a coin-flip channel); independent channels: 0 bits.
 - **Mean squared error (MSE)** — the average of the squared gaps between
   guesses and truths; squaring makes misses positive and big misses
-  count extra. Guesses 2, 5 against truths 1, 5: MSE $= (1^2 + 0^2)/2 = 0.5$.
+  count extra. Guesses 2, 5 against truths 1, 5: MSE $`= (1^2 + 0^2)/2 = 0.5`$.
 - **Sensitivity** — of all truly abnormal cases, the fraction we caught:
-  $\mathrm{TP}/(\mathrm{TP}+\mathrm{FN})$. Catch 18 of 20: sensitivity $= 0.9$.
+  $`\mathrm{TP}/(\mathrm{TP}+\mathrm{FN})`$. Catch 18 of 20: sensitivity $`= 0.9`$.
 - **Specificity** — of all truly normal cases, the fraction we left
-  alone: $\mathrm{TN}/(\mathrm{TN}+\mathrm{FP})$. Spare 77 of 80: specificity $\approx 0.96$.
+  alone: $`\mathrm{TN}/(\mathrm{TN}+\mathrm{FP})`$. Spare 77 of 80: specificity $`\approx 0.96`$.
 - **Precision** — of all the cases we flagged, the fraction that were
-  real: $\mathrm{TP}/(\mathrm{TP}+\mathrm{FP})$. 18 real out of 21 flags: precision $\approx 0.86$.
+  real: $`\mathrm{TP}/(\mathrm{TP}+\mathrm{FP})`$. 18 real out of 21 flags: precision $`\approx 0.86`$.
 - **AUROC** — the probability that a randomly chosen abnormal case gets
   a higher score than a randomly chosen normal one; count winning pairs
-  and divide by all pairs. 18 wins of 20 pairs: AUROC $= 0.9$.
+  and divide by all pairs. 18 wins of 20 pairs: AUROC $`= 0.9`$.
 - **Weighted average / mixing weights** — an average where some items
   count more, with weights that sum to 1. Weights 0.5/0.5 on 2 and 4
   give 3; weights 0.9/0.1 give 2.2.
@@ -133,11 +133,13 @@ bin values into L/M/H; two very different waves can share one table.
 surprises.** Ask how many yes/no questions you need to guess the next
 state. If the next symbol is one of 4 equally likely states, you need
 log2(4) = 2 questions; that number of questions *is* the entropy in bits.
-In symbols, for outcome probabilities $p_1, \dots, p_n$:
+In symbols, for outcome probabilities $`p_1, \dots, p_n`$:
 
-$$H = -\sum_i p_i \log_2 p_i$$
+```math
+H = -\sum_i p_i \log_2 p_i
+```
 
-Check it on the uniform 4-state case: each $p_i = 1/4$ and $\log_2(1/4) = -2$, so $H = -4 \times (1/4) \times (-2) = 2$ bits — exactly the counting answer.
+Check it on the uniform 4-state case: each $`p_i = 1/4`$ and $`\log_2(1/4) = -2`$, so $`H = -4 \times (1/4) \times (-2) = 2`$ bits — exactly the counting answer.
 *Worked example:* suppose a channel cycles deterministically
 M,H,M,L,M,H,M,L — once you know the current state, the next is certain, so
 it costs 0 extra questions: entropy of the next symbol given the current
@@ -158,7 +160,9 @@ example:* distance between A = (0,3,0) and B = (0,2,0) is
 sqrt((0-0)² + (3-2)² + (0-0)²) = 1, while A to C = (0,-3,0) is
 sqrt(0 + 36 + 0) = 6. In symbols, the Euclidean distance is
 
-$$d(A, B) = \sqrt{\sum_i (A_i - B_i)^2}$$
+```math
+d(A, B) = \sqrt{\sum_i (A_i - B_i)^2}
+```
 
 — subtract, square, add, square-root — and it reproduces both numbers
 above — so the shape-aware statement "B is closer to A than C is" is one
@@ -286,9 +290,11 @@ Sensitivity ("of the truly abnormal, how many did we catch?") is
 many were real?") is 18/21 ≈ 86%. With TP = true positives,
 TN = true negatives, FP = false alarms, FN = misses, these are:
 
-$$\text{sensitivity} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}} = \frac{18}{18 + 2} = 0.90, \qquad
+```math
+\text{sensitivity} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FN}} = \frac{18}{18 + 2} = 0.90, \qquad
 \text{specificity} = \frac{\mathrm{TN}}{\mathrm{TN} + \mathrm{FP}} = \frac{77}{77 + 3} \approx 0.96, \qquad
-\text{precision} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FP}} = \frac{18}{18 + 3} \approx 0.86$$
+\text{precision} = \frac{\mathrm{TP}}{\mathrm{TP} + \mathrm{FP}} = \frac{18}{18 + 3} \approx 0.86
+```
 
 Every detection metric in this repo is
 a ratio of cells in such a table — no integrals involved. *Worked
@@ -325,11 +331,13 @@ Scale that idea up:
 4. Ask the model to reconstruct the hidden waveforms from the visible
    ones, and score the guess against the truth (the average squared gap
    between guessed and true numbers — "mean squared error" — lower is
-   better). In symbols, for guesses $\hat{x}_i$ and truths $x_i$:
+   better). In symbols, for guesses $`\hat{x}_i`$ and truths $`x_i`$:
 
-   $$\mathrm{MSE} = \frac{1}{n} \sum_{i=1}^{n} (\hat{x}_i - x_i)^2$$
+   ```math
+   \mathrm{MSE} = \frac{1}{n} \sum_{i=1}^{n} (\hat{x}_i - x_i)^2
+   ```
 
-   Guessing 2, 5, 8 when the truth is 1, 5, 6 gives $((2-1)^2 + 0^2 + (8-6)^2)/3 = (1 + 0 + 4)/3 \approx 1.67$.
+   Guessing 2, 5, 8 when the truth is 1, 5, 6 gives $`((2-1)^2 + 0^2 + (8-6)^2)/3 = (1 + 0 + 4)/3 \approx 1.67`$.
 
 To succeed, the model must learn real structure: which electrodes are
 neighbors, how rhythms propagate, what plausible EEG looks like. We mask
@@ -377,7 +385,9 @@ how many yes/no questions about channel X does knowing channel Y answer?
 In symbols, it is the entropy of X minus the entropy that remains once Y
 is known:
 
-$$I(X; Y) = H(X) - H(X \mid Y)$$
+```math
+I(X; Y) = H(X) - H(X \mid Y)
+```
 
 — "questions about X" minus "questions still left after hearing Y."
 *Worked example:* two channels each flip a fair coin independently —
@@ -438,12 +448,14 @@ intuition: every piece of the signal gets to ask every other piece, "are
 you relevant to understanding me?" In table language (Step 3's weight
 tables, Road 2): attention is a mixing table whose rows sum to 1 — each
 patch's new value is a weighted average of the others, with weights
-learned from the data. In symbols, patch $i$ updates as
+learned from the data. In symbols, patch $`i`$ updates as
 
-$$x_i^{\text{new}} = \sum_j w_{ij} \, x_j, \qquad \sum_j w_{ij} = 1$$
+```math
+x_i^{\text{new}} = \sum_j w_{ij} \, x_j, \qquad \sum_j w_{ij} = 1
+```
 
 — e.g. weights 0.5/0.5 mix values 2 and 4 into 3, and training is just
-learning which $w_{ij}$ help reconstruct the masked channels.
+learning which $`w_{ij}`$ help reconstruct the masked channels.
 
 ```mermaid
 flowchart LR
@@ -470,12 +482,14 @@ higher score? Count all 4×5 = 20 pairs: the abnormal EEG wins in 18 of
 them, ties once, loses once. So the model ranks correctly about 90% of the
 time. That single number is the **AUROC** ("area under the ROC curve"):
 the probability that a random positive is ranked above a random negative.
-In symbols, with $S_{+}$ a random abnormal score and $S_{-}$ a random
+In symbols, with $`S_{+}`$ a random abnormal score and $`S_{-}`$ a random
 normal one:
 
-$$\mathrm{AUROC} = P\left(S_{+} > S_{-}\right)$$
+```math
+\mathrm{AUROC} = P\left(S_{+} > S_{-}\right)
+```
 
-and our 18 winning pairs out of 20 are the counted estimate $18/20 = 0.9$.
+and our 18 winning pairs out of 20 are the counted estimate $`18/20 = 0.9`$.
 0.5 is coin-flip, 1.0 is perfect. It is popular because it summarizes
 ranking quality at every possible threshold at once — without committing
 to where you draw the "flag this" line. A sibling metric, **AUPRC**, is
