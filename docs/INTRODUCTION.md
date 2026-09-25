@@ -1,6 +1,4 @@
-# Introduction — Paper 1: A Cross-Task Benchmark for Clinical EEG Foundation Models
-
-**Series note:** This is **Paper 1 of 4** in the clinical EEG foundation-model series. It is the first paper and does not build on any former paper. Papers 2 (seizure forecasting), 3 (clinical risk detection), and 4 (fairness/generalizability audit) all build on this paper's encoder and evaluation harness.
+# Introduction — A Cross-Task Benchmark for Clinical EEG Foundation Models
 
 ![Concept figure: a transformer encoder pretrained on raw clinical EEG is frozen and evaluated across several downstream tasks with one shared harness](figures/01-concept-schematic.png)
 
@@ -44,7 +42,7 @@ We pretrain a transformer encoder on unlabeled TUEG recordings using both masked
 ## Expected contributions
 
 - A unified, open, reproducible benchmark for clinical EEG foundation models across TUAB, TUSZ, and TUEV, with fixed splits, baselines, and statistical comparison procedures.
-- An encoder and evaluation harness reused throughout the series: Paper 2 adds seizure-forecasting heads on top, Paper 3 builds clinical risk detection on the same representations, and Paper 4 audits the resulting models for fairness and generalizability.
+- An encoder and evaluation harness designed for reuse: downstream work can add task heads (e.g., seizure forecasting, clinical risk detection) on the same representations and audit the resulting models for fairness and generalizability.
 - Empirical evidence on when self-supervised pretraining on TUEG helps, which objective transfers best, and how session-scale context changes performance.
 
 ## Scope and boundary

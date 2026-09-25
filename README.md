@@ -1,10 +1,6 @@
-# EEG Foundation Model Benchmark (Paper 1)
+# EEG Foundation Model Benchmark 
 
 This independent research repository plans and tracks a benchmark of self-supervised EEG foundation models across clinical downstream tasks, using the Temple University EEG Corpus family. It provides evaluation utilities for transparent review and extension.
-
-## Series position
-
-This is **Paper 1** of the clinical EEG foundation-model series (4 papers). It is the foundation of the series; Papers 2–4 build on its pretrained encoders and evaluation harness.
 
 ## Research plan
 
@@ -13,7 +9,7 @@ This is **Paper 1** of the clinical EEG foundation-model series (4 papers). It i
 | TUEG access + preprocessing pipeline (license: free for research) | Versioned preprocessed corpus. |
 | Adapt/pretrain SSL encoder (masked modeling / contrastive; fine-tune BrainBERT/LaBraM-class checkpoints) | Versioned encoder checkpoints. |
 | Benchmark across downstream tasks: TUSZ seizure detection, TUAB abnormality, Sleep-EDF staging, CHB-MIT validation | Cross-task leaderboard vs. task-specific baselines. |
-| Release evaluation harness | Reused by Papers 2–4. |
+| Release evaluation harness | Reusable by later work. |
 
 **Current status:** implementation stage; the SSL framework (channel-masked reconstruction pretraining, linear-probe/fine-tune evaluation, benchmark runner) is implemented and validated on synthetic EEG; the corpus staging pipeline (`eegfm.tuh` + `scripts/`) is implemented and validated end-to-end on **real public EEG** (PhysioNet eegmmidb, open access — see `reports/`); TUEG license form to be submitted; no TUH corpus experiments have been run.
 

@@ -607,20 +607,6 @@ Temple University — see [DATA_ACCESS.md](DATA_ACCESS.md). Because approval
 takes days to weeks, this repo is developed and tested on synthetic EEG
 plus a credential-free public dataset (PhysioNet eegmmidb).
 
-## The four-paper series
-
-This repo is **Paper 1** of four. It builds the encoder and evaluation
-harness the later papers reuse.
-
-```mermaid
-flowchart LR
-    P1["Paper 1 (this repo)<br/>eeg-foundation-benchmark<br/>cross-task benchmark + encoder"]
-    P2["Paper 2<br/>seizure forecasting<br/>(heads on this encoder)"]
-    P3["Paper 3<br/>clinical risk detection<br/>(same representations)"]
-    P4["Paper 4<br/>fairness & generalizability audit"]
-    P1 --> P2 --> P3
-    P1 --> P4
-```
 
 ## Choosing your road
 
