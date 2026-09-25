@@ -2,7 +2,9 @@
 
 **Series note:** This is **Paper 1 of 4** in the clinical EEG foundation-model series. It is the first paper and does not build on any former paper. Papers 2 (seizure forecasting), 3 (clinical risk detection), and 4 (fairness/generalizability audit) all build on this paper's encoder and evaluation harness.
 
-**Concept figure:** the pipeline of this paper — raw clinical EEG (TUEG) → harmonized preprocessing → self-supervised transformer encoder (masked channel reconstruction + contrastive objectives) → TUAB/TUSZ/TUEV downstream tasks, all scored under one unified benchmark harness. See [figures/concept_figure.md](figures/concept_figure.md) for a faithful Mermaid rendering (the FigForge/NeurIPS-style PNG could not be committed with the current text-only tooling; the Mermaid version depicts the identical pipeline).
+![Concept figure: a transformer encoder pretrained on raw clinical EEG is frozen and evaluated across several downstream tasks with one shared harness](figures/01-concept-schematic.png)
+
+*Figure 1: A transformer encoder pretrained on raw clinical EEG is frozen and evaluated across several downstream tasks with one shared harness. (Editable Mermaid source: [figures/concept_figure.md](figures/concept_figure.md).)*
 
 ## Background
 

@@ -14,14 +14,15 @@ information theory, geometry, transition tables, and frequency-count
 probability. None of them require calculus or Newtonian mechanics. Pick
 whichever matches your intuition; they all arrive at the same concept.
 
-**Concept figure:** the pipeline of this repo — raw clinical EEG →
-preprocessing → self-supervised transformer encoder → TUAB/TUSZ/TUEV tasks
-under one benchmark harness — rendered faithfully in Mermaid at
-[figures/concept_figure.md](figures/concept_figure.md). *(A publication-style
-PNG was generated but could not be committed with the current text-only
-tooling; the Mermaid figure depicts the identical pipeline.)*
+![Concept figure: a transformer encoder pretrained on raw clinical EEG is frozen and evaluated across several downstream tasks with one shared harness](figures/01-concept-schematic.png)
+
+*Figure 1: A transformer encoder pretrained on raw clinical EEG is frozen and evaluated across several downstream tasks with one shared harness. (Editable Mermaid source: [figures/concept_figure.md](figures/concept_figure.md).)*
 
 ---
+
+![Data collection and measurement workflow: clinical EEG recordings are collected with scalp electrodes during routine hospital care and stored with clinician reports](figures/02-data-collection.png)
+
+*Data workflow: Clinical EEG recordings are collected with scalp electrodes during routine hospital care and stored with clinician reports.*
 
 ## Start here: the math toolkit from zero
 
