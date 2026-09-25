@@ -50,6 +50,17 @@ def pretrain_mae(
 
 
 def train_test_split(X: np.ndarray, y: np.ndarray, test_frac: float = 0.3, seed: int = 0):
+    """Train test split.
+
+    Args:
+        X (np.ndarray): X.
+        y (np.ndarray): y.
+        test_frac (float): test frac.
+        seed (int): seed.
+
+    Returns:
+        The test split.
+    """
     rng = np.random.default_rng(seed)
     idx = rng.permutation(len(X))
     n_test = int(len(X) * test_frac)

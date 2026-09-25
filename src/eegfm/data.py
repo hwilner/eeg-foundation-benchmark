@@ -38,7 +38,7 @@ def standardize_channels(
     source_channels : names matching axis 1 of `x`
     target_channels : desired output montage
 
-    Returns
+    Returns:
     -------
     (n_samples, len(target_channels), n_times) float array
     """
@@ -63,6 +63,12 @@ class EEGWindowDataset(Dataset):
         windows: np.ndarray,
         labels: np.ndarray | None = None,
     ) -> None:
+        """Initialize the instance.
+
+        Args:
+        windows (np.ndarray): windows.
+        labels (np.ndarray | None): labels.
+        """
         if windows.ndim != 3:
             raise ValueError("windows must be (n_samples, n_channels, n_times)")
         if labels is not None and len(labels) != len(windows):
@@ -71,9 +77,22 @@ class EEGWindowDataset(Dataset):
         self.labels = None if labels is None else torch.as_tensor(labels, dtype=torch.long)
 
     def __len__(self) -> int:
+        """Return the number of items.
+
+        Returns:
+        int: the result.
+        """
         return len(self.windows)
 
     def __getitem__(self, idx: int):
+        """Getitem.
+
+        Args:
+        idx (int): idx.
+
+        Returns:
+        The result.
+        """
         if self.labels is None:
             return self.windows[idx]
         return self.windows[idx], self.labels[idx]

@@ -24,6 +24,17 @@ class EEGTransformerEncoder(nn.Module):
         n_layers: int = 2,
         dropout: float = 0.1,
     ) -> None:
+        """Initialize the instance.
+
+        Args:
+        n_channels (int): n channels.
+        n_times (int): n times.
+        patch_len (int): patch len.
+        d_model (int): d model.
+        n_heads (int): n heads.
+        n_layers (int): n layers.
+        dropout (float): dropout.
+        """
         super().__init__()
         if n_times % patch_len != 0:
             raise ValueError("n_times must be divisible by patch_len")
@@ -51,7 +62,7 @@ class EEGTransformerEncoder(nn.Module):
         self.d_model = d_model
 
     def to_patches(self, x: torch.Tensor) -> torch.Tensor:
-        """(B, C, T) -> (B, C * T//P, P)"""
+        """(B, C, T) -> (B, C * T//P, P)."""
         B, C, T = x.shape
         x = x.view(B, C, self.n_time_patches, self.patch_len)
         return x.reshape(B, self.n_patches, self.patch_len)
@@ -81,11 +92,25 @@ class LinearProbe(nn.Module):
     """Linear classification head on channel-pooled encoder features."""
 
     def __init__(self, encoder: EEGTransformerEncoder, n_classes: int = 2) -> None:
+        """Initialize the instance.
+
+        Args:
+        encoder (EEGTransformerEncoder): encoder.
+        n_classes (int): n classes.
+        """
         super().__init__()
         self.encoder = encoder
         self.head = nn.Linear(encoder.n_channels * encoder.d_model, n_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward.
+
+        Args:
+        x (torch.Tensor): x.
+
+        Returns:
+        torch.Tensor: the result.
+        """
         return self.head(self.encoder.forward_channel_features(x))
 
 
@@ -100,6 +125,11 @@ class MaskedReconstructionModel(nn.Module):
     """
 
     def __init__(self, encoder: EEGTransformerEncoder) -> None:
+        """Initialize the instance.
+
+        Args:
+        encoder (EEGTransformerEncoder): encoder.
+        """
         super().__init__()
         self.encoder = encoder
         self.decoder = nn.Sequential(

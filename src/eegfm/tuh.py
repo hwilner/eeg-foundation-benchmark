@@ -5,12 +5,12 @@ format used by the rest of the package:
 
 - EDF reading via `pyedflib` (preferred) or `mne` (optional fallback);
 - channel-label normalization from TUH labels (e.g. ``EEG FP1-REF``,
-  ``FP1-LE``) to the canonical 19-channel 10-20 montage
-  (:data:`eegfm.data.CANONICAL_CHANNELS`);
+``FP1-LE``) to the canonical 19-channel 10-20 montage
+(:data:`eegfm.data.CANONICAL_CHANNELS`);
 - resampling to a common sampling rate (scipy polyphase);
 - fixed-length windowing into (n_windows, n_channels, n_times) arrays;
 - integrity checks and a per-recording manifest (pandas DataFrame /
-  CSV).
+CSV).
 
 The TUH EEG Corpus is **not publicly downloadable** — it requires a
 signed DUA with Temple University. All staging entry points raise
@@ -110,7 +110,7 @@ def _read_edf_mne(path: Path):
 def read_edf(path: str | Path):
     """Read an EDF recording.
 
-    Returns
+    Returns:
     -------
     data : (n_channels, n_samples) float array (microvolts as stored)
     sfreq : float sampling rate in Hz
@@ -162,11 +162,11 @@ def window_recording(
     Steps: read EDF -> map labels onto the canonical montage -> resample
     -> per-window/channel standardization -> fixed-length windows.
 
-    Returns
+    Returns:
     -------
     windows : (n_windows, len(target_channels), n_times) float32 array
     info : dict with recording metadata (sfreq, duration_sec,
-        matched_channels, n_windows) for the manifest.
+    matched_channels, n_windows) for the manifest.
     """
     data, sfreq, labels = read_edf(path)
     norm = [normalize_channel_name(c) for c in labels]

@@ -33,7 +33,7 @@ def generate_synthetic_eeg(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate labeled synthetic EEG windows with a phase-coupling label.
 
-    Returns
+    Returns:
     -------
     X : (n_samples, n_channels, n_times) float32
     y : (n_samples,) int64 labels in {0, 1}

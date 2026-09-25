@@ -24,6 +24,7 @@ from eegfm.pretrain import pretrain_mae
 
 
 def main() -> None:
+    """Main."""
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--windows", type=Path, required=True,
                    help="Path to windows.npz produced by scripts/prepare_tueg.py.")

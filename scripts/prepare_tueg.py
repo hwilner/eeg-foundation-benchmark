@@ -24,6 +24,7 @@ from eegfm import tuh
 
 
 def main() -> None:
+    """Main."""
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--raw-root", type=Path, default=None,
                    help="Root of the raw TUH EDF tree (rsync'ed after DUA approval).")

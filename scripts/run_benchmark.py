@@ -52,6 +52,7 @@ def _load_public_demo_task(windows_path: Path):
 
 
 def main() -> None:
+    """Main."""
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     src = p.add_mutually_exclusive_group(required=True)
     src.add_argument("--windows", type=Path,
