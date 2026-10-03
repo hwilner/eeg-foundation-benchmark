@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import torch
 from sklearn.metrics import average_precision_score, roc_auc_score
 
 from .data import EEGWindowDataset
@@ -41,8 +42,17 @@ def run_benchmark(
 ) -> pd.DataFrame:
     """Compare pretrained-then-probed vs from-scratch on the same split.
 
+    The run is fully determined by `seed`: both encoders are constructed only
+    after the global torch RNG is seeded here, so their initial weights do not
+    depend on whatever else ran in the process beforehand.
+
     Returns a DataFrame with columns [method, auroc, auprc].
     """
+    # Encoder construction draws from the global torch RNG. Seeding here, before
+    # either encoder exists, is what makes `seed` control the whole comparison;
+    # pretrain_mae and evaluate_linear_probe seed again internally, but they run
+    # after the first encoder has already been built.
+    torch.manual_seed(seed)
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_frac=test_frac, seed=seed)
     if X_unlabeled is None:
         X_unlabeled = X_tr
