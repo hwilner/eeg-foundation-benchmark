@@ -1,5 +1,8 @@
 """Tests for the benchmark runner and the pretrained-vs-scratch comparison."""
 
+import time
+
+import pytest
 import torch
 from sklearn.metrics import roc_auc_score
 
@@ -13,6 +16,29 @@ from eegfm.simulate import generate_synthetic_eeg
 MODEL_KW = dict(n_channels=8, n_times=128, patch_len=16, d_model=32, n_heads=4, n_layers=1)
 TINY_KW = dict(n_channels=8, n_times=64, patch_len=16, d_model=16, n_heads=2, n_layers=1)
 
+# Declared wall-clock budget for the heavy comparison test (seconds). Observed
+# runtime is tens of seconds on an idle CPU; the budget gives generous headroom
+# while still failing a starved run with a clear message instead of an opaque
+# harness timeout (see the root-level results.md robustness note).
+BUDGET_SECONDS = 300
+
+
+@pytest.fixture(autouse=True)
+def _single_threaded_torch():
+    """Pin torch to one thread per test so seeded results are contention-proof.
+
+    Parallel CPU reductions make tiny-model training nondeterministic under
+    machine load; pinning one thread keeps the seeded comparison stable no
+    matter what else runs on the machine. The previous thread setting is
+    restored after each test.
+    """
+    previous = torch.get_num_threads()
+    torch.set_num_threads(1)
+    try:
+        yield
+    finally:
+        torch.set_num_threads(previous)
+
 
 def test_pretrained_probe_beats_from_scratch():
     # Realistic SSL setting: abundant unlabeled windows, limited labels.
@@ -20,7 +46,13 @@ def test_pretrained_probe_beats_from_scratch():
     # per-channel power is uninformative, so a from-scratch supervised
     # model cannot find the pattern at this scale, while channel-masked
     # reconstruction pretraining must learn it.
-    """On the planted phase-coupling task, the pretrained probe beats from-scratch."""
+    """On the planted phase-coupling task, the pretrained probe beats from-scratch.
+
+    Fails with a clear message if the run exceeds its declared wall-clock
+    budget (BUDGET_SECONDS), which indicates a starved machine rather than a
+    code regression (see the root-level results.md robustness note).
+    """
+    start = time.monotonic()
     X_unlabeled, _ = generate_synthetic_eeg(n_samples=256, n_channels=8, n_times=128, seed=99)
     X, y = generate_synthetic_eeg(n_samples=360, n_channels=8, n_times=128, seed=1)
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_frac=0.6, seed=1)
@@ -34,6 +66,13 @@ def test_pretrained_probe_beats_from_scratch():
 
     auroc_pre = roc_auc_score(y_te, p_pre)
     auroc_scr = roc_auc_score(y_te, p_scr)
+    elapsed = time.monotonic() - start
+    if elapsed > BUDGET_SECONDS:
+        pytest.fail(
+            f"benchmark comparison exceeded its declared {BUDGET_SECONDS}s "
+            f"budget ({elapsed:.0f}s); the machine is likely under heavy "
+            "load — rerun on an idle machine"
+        )
     assert auroc_pre > 0.8  # probe actually reads out the planted pattern
     assert auroc_pre > auroc_scr
 
