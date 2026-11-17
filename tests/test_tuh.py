@@ -14,7 +14,7 @@ pyedflib = pytest.importorskip("pyedflib")
 
 
 def test_normalize_channel_name():
-    """Test normalize channel name."""
+    """Raw TUH/BDF labels map to canonical 10-20 names; non-scalp labels drop."""
     assert tuh.normalize_channel_name("EEG FP1-REF") == "FP1"
     assert tuh.normalize_channel_name("EEG T3-REF") == "T3"
     assert tuh.normalize_channel_name("FP1-LE") == "FP1"
@@ -27,17 +27,21 @@ def test_normalize_channel_name():
 
 
 def test_missing_corpus_raises_with_access_pointer(tmp_path):
-    """Test missing corpus raises with access pointer.
-
-    Args:
-        tmp_path: tmp path.
-    """
+    """An empty corpus root raises with a pointer to the access docs."""
     with pytest.raises(tuh.TUHDataNotFoundError) as excinfo:
         tuh.build_manifest(tmp_path / "empty")
     assert "docs/DATA_ACCESS.md" in str(excinfo.value)
 
 
 def _write_synthetic_edf(path, channels, sfreq=128.0, seconds=6.0):
+    """Write a tiny synthetic EDF fixture with one sinusoid per channel.
+
+    Args:
+        path: Destination EDF path.
+        channels: Channel labels to write into the header.
+        sfreq: Sampling rate in Hz.
+        seconds: Recording duration in seconds.
+    """
     n = int(sfreq * seconds)
     t = np.arange(n) / sfreq
     writer = pyedflib.EdfWriter(str(path), len(channels))
@@ -66,11 +70,7 @@ def _write_synthetic_edf(path, channels, sfreq=128.0, seconds=6.0):
 
 def test_window_recording_and_manifest(tmp_path):
     # TUH-style labels with -REF suffixes.
-    """Test window recording and manifest.
-
-    Args:
-        tmp_path: tmp path.
-    """
+    """Staging a synthetic EDF yields standardized canonical-montage windows."""
     channels = [f"EEG {c}-REF" for c in CANONICAL_CHANNELS[:8]]
     edf = tmp_path / "sub-01" / "rec1.edf"
     edf.parent.mkdir(parents=True)
@@ -99,7 +99,7 @@ def test_window_recording_and_manifest(tmp_path):
 
 
 def test_resample_signal():
-    """Test resample signal."""
+    """Polyphase resampling changes length; matching rates return the input."""
     x = np.random.default_rng(0).standard_normal((3, 256))
     y = tuh.resample_signal(x, 256.0, 128.0)
     assert y.shape == (3, 128)

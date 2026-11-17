@@ -32,7 +32,25 @@ from eegfm.simulate import generate_synthetic_eeg
 
 
 def _load_public_demo_task(windows_path: Path):
-    """Eyes-open (R01) vs eyes-closed (R02) task from eegmmidb staging."""
+    """Build the eyes-open vs eyes-closed task from staged eegmmidb windows.
+
+    Labels each window by its source recording: baseline eyes-open runs
+    (R01) are label 0 and baseline eyes-closed runs (R02) are label 1;
+    windows from other runs are dropped.
+
+    Args:
+        windows_path: Path to a ``windows.npz`` produced by
+            ``scripts/prepare_tueg.py --public-demo``; its sibling
+            ``manifest.csv`` maps recording indices to files.
+
+    Returns:
+        Tuple ``(X, y)``: windows of shape (n_windows, n_channels, n_times)
+        from R01/R02 recordings only, and their int64 labels.
+
+    Raises:
+        SystemExit: If the staged demo does not include both R01 and R02
+            recordings.
+    """
     data = np.load(windows_path)
     windows, rec_ids = data["windows"], data["recording_id"]
     manifest = pd.read_csv(windows_path.parent / "manifest.csv")
@@ -52,7 +70,11 @@ def _load_public_demo_task(windows_path: Path):
 
 
 def main() -> None:
-    """Main."""
+    """Parse CLI arguments and run the benchmark on the selected data source.
+
+    Raises:
+        SystemExit: If ``--windows`` is given without a ``--labels`` CSV.
+    """
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     src = p.add_mutually_exclusive_group(required=True)
     src.add_argument("--windows", type=Path,

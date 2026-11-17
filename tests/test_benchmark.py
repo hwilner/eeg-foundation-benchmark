@@ -1,4 +1,4 @@
-"""Test benchmark."""
+"""Tests for the benchmark runner and the pretrained-vs-scratch comparison."""
 
 import torch
 from sklearn.metrics import roc_auc_score
@@ -20,7 +20,7 @@ def test_pretrained_probe_beats_from_scratch():
     # per-channel power is uninformative, so a from-scratch supervised
     # model cannot find the pattern at this scale, while channel-masked
     # reconstruction pretraining must learn it.
-    """Test pretrained probe beats from scratch."""
+    """On the planted phase-coupling task, the pretrained probe beats from-scratch."""
     X_unlabeled, _ = generate_synthetic_eeg(n_samples=256, n_channels=8, n_times=128, seed=99)
     X, y = generate_synthetic_eeg(n_samples=360, n_channels=8, n_times=128, seed=1)
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_frac=0.6, seed=1)
@@ -39,7 +39,7 @@ def test_pretrained_probe_beats_from_scratch():
 
 
 def test_run_benchmark_table():
-    """Test run benchmark table.
+    """The runner returns a well-formed two-arm results table.
 
     This test covers the results-table contract only. The claim that the
     pretrained probe beats the from-scratch baseline is a scientific result and

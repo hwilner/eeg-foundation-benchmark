@@ -1,4 +1,4 @@
-"""Test models."""
+"""Tests for channel standardization, the dataset interface, and model shapes."""
 
 import numpy as np
 import torch
@@ -8,7 +8,7 @@ from eegfm.models import EEGTransformerEncoder, LinearProbe, MaskedReconstructio
 
 
 def test_standardize_channels_reorders_and_zerofills():
-    """Test standardize channels reorders and zerofills."""
+    """Known channels land in the requested order; missing ones are zeros."""
     x = np.arange(2 * 3 * 5, dtype=np.float32).reshape(2, 3, 5)
     out = standardize_channels(x, ["C3", "C4", "FZ"], ["FZ", "C3", "C4", "PZ"])
     assert out.shape == (2, 4, 5)
@@ -18,7 +18,7 @@ def test_standardize_channels_reorders_and_zerofills():
 
 
 def test_standardize_channels_preserves_known_signal():
-    """Test standardize channels preserves known signal."""
+    """Reprojection preserves a planted known signal on matched channels."""
     rng = np.random.default_rng(0)
     t = np.arange(64) / 64.0
     sig = np.sin(2 * np.pi * 8 * t)[None, None, :].repeat(2, 0)
@@ -28,7 +28,7 @@ def test_standardize_channels_preserves_known_signal():
 
 
 def test_dataset_interface():
-    """Test dataset interface."""
+    """The dataset yields windows, or (window, label) pairs when labeled."""
     X = np.zeros((10, 4, 64), dtype=np.float32)
     y = np.arange(10) % 2
     ds = EEGWindowDataset(X, y)
@@ -40,7 +40,7 @@ def test_dataset_interface():
 
 
 def test_encoder_forward_shapes():
-    """Test encoder forward shapes."""
+    """Encoder outputs have the documented embedding and token shapes."""
     enc = EEGTransformerEncoder(
         n_channels=6, n_times=128, patch_len=16, d_model=32, n_heads=4, n_layers=1
     )
@@ -53,7 +53,7 @@ def test_encoder_forward_shapes():
 
 
 def test_linear_probe_shape():
-    """Test linear probe shape."""
+    """The probe head maps C*d_model channel features to class logits."""
     enc = EEGTransformerEncoder(n_channels=4, n_times=64, patch_len=16, d_model=16, n_layers=1)
     probe = LinearProbe(enc, n_classes=2)
     assert probe.head.in_features == 4 * 16
@@ -61,7 +61,7 @@ def test_linear_probe_shape():
 
 
 def test_channel_masked_reconstruction_shapes():
-    """Test channel masked reconstruction shapes."""
+    """Reconstruction shapes match the target; masking covers whole channels."""
     enc = EEGTransformerEncoder(n_channels=4, n_times=64, patch_len=16, d_model=16, n_layers=1)
     model = MaskedReconstructionModel(enc)
     recon, target, mask = model(torch.randn(3, 4, 64), channel_mask_ratio=0.5)
