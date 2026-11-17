@@ -74,13 +74,14 @@
 |---|---|---|---|---|---|
 | `main` | `74392c3` | `PYTHONPATH=$PWD:$PWD/src python -m pytest -q` | 13 passed, 1 skipped, 0 failed (19.52 s) | Python 3.12.12, CPU, torch 2.8.0+cu128, numpy 2.2.5, pandas 2.3.2, scipy 1.16.2, scikit-learn 1.7.2, pytest 9.2.0 | `tests/test_tuh.py` skipped because optional `pyedflib` is not installed. |
 | `fix/seeded-benchmark-init` | `d1065be` | `PYTHONPATH=$PWD:$PWD/src python -m pytest -q` | 13 passed, 1 skipped, 0 failed (17.48 s) | Same as above | Branch code tree matches the seeded-benchmark fix already merged into `main`; it lacks only the later root `results.md` documentation commits. |
+| `main` | `d7b7207` | `PYTHONPATH=$PWD:$PWD/src python -m pytest -q` | 17 passed, 0 skipped, 0 failed (22.2 s) | Python 3.12.12, CPU, torch 2.8.0+cu128, numpy 2.2.5, pandas 2.3.2, scipy 1.16.2, scikit-learn 1.7.2, pytest 9.2.0, pyedflib 0.1.42 | Post-#19 (Google-style docstrings) and #20 part 1 (benchmark-test hardening) tree; pyedflib installed, so the four `tests/test_tuh.py` EDF staging tests run instead of skipping. |
 
-*Table 7. This run's cheap-test audit (2026-11-17). Heavy compute — TUEG pretraining (#6), cross-task benchmarks (#10/#12), and leaderboard reproduction (#17) — is deferred: needs environment/data and issue-gated corpus access.*
+*Table 7. Cheap-test audits (2026-11-17). Heavy compute — TUEG pretraining (#6), cross-task benchmarks (#10/#12), and leaderboard reproduction (#17) — is deferred: needs environment/data and issue-gated corpus access.*
 
 ## Negative and boundary results
 
 - The from-scratch supervised model outperforms the SSL-pretrained linear probe on the tiny public eegmmidb demo (Table 2). This is reported as a pipeline-validation result, not as a claim about scaled pretraining.
 - No TUH EEG Corpus result exists yet; TUEG access remains issue #1 and all TUH experiments are blocked until the DUA path is complete.
 - No clinical claim is supported by the current synthetic or public-demo validations.
-- The remaining docstring-style gap is tracked as issue #19 and is documentation-only.
-- The root-level [../results.md](../results.md) documents a separate robustness finding: the benchmark test passed in isolation but was not robust under resource contention. That note concerns test reliability, not a scientific result.
+- The docstring-style gap (issue #19) was closed on 2026-11-17: every public module, class, function, and method across `src/`, `scripts/`, and `tests/` now carries a Google-style docstring. The change was documentation-only, verified logic-identical by docstring-stripped AST comparison against the pre-change tree.
+- The root-level [../results.md](../results.md) documents a separate robustness finding: the benchmark test passed in isolation but was not robust under resource contention. That note concerns test reliability, not a scientific result. Two of its three recommendations are implemented in issue #20 (single-thread pinning and a declared wall-clock budget in `tests/test_benchmark.py`); the third — a CI workflow under `.github/workflows/` — could not be pushed by the automation token (missing `workflow` scope) and awaits owner action, with the exact YAML attached to issue #20.
