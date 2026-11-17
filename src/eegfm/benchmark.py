@@ -24,6 +24,15 @@ from .pretrain import pretrain_mae, train_test_split
 
 
 def _metrics(y_true: np.ndarray, scores: np.ndarray) -> dict[str, float]:
+    """Compute the benchmark's binary-classification metrics.
+
+    Args:
+        y_true: Integer test labels of shape (n_samples,).
+        scores: Predicted class-1 probabilities of shape (n_samples,).
+
+    Returns:
+        Dictionary with keys ``auroc`` and ``auprc`` (both floats).
+    """
     return {
         "auroc": float(roc_auc_score(y_true, scores)),
         "auprc": float(average_precision_score(y_true, scores)),
@@ -46,7 +55,22 @@ def run_benchmark(
     after the global torch RNG is seeded here, so their initial weights do not
     depend on whatever else ran in the process beforehand.
 
-    Returns a DataFrame with columns [method, auroc, auprc].
+    Args:
+        X: Labeled windows of shape (n_samples, n_channels, n_times).
+        y: Integer labels of shape (n_samples,).
+        X_unlabeled: Optional unlabeled windows for SSL pretraining;
+            defaults to the training split of `X`.
+        pretrain_epochs: Channel-masked reconstruction pretraining epochs.
+        probe_epochs: Training epochs for the probe/fine-tune evaluations.
+        test_frac: Fraction of labeled windows held out for testing.
+        seed: RNG seed controlling the split, both encoder
+            initializations, pretraining, and probe training.
+        **model_kwargs: Overrides forwarded to `EEGTransformerEncoder`
+            (``n_channels`` and ``n_times`` default to the shape of `X`).
+
+    Returns:
+        DataFrame with columns [method, auroc, auprc] and one row per arm:
+        "ssl-pretrained + linear-probe" and "from-scratch supervised".
     """
     # Encoder construction draws from the global torch RNG. Seeding here, before
     # either encoder exists, is what makes `seed` control the whole comparison;

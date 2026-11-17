@@ -33,10 +33,22 @@ def generate_synthetic_eeg(
 ) -> tuple[np.ndarray, np.ndarray]:
     """Generate labeled synthetic EEG windows with a phase-coupling label.
 
+    Args:
+        n_samples: Number of windows to generate.
+        n_channels: Number of channels per window; the second half of the
+            channels carries the class-dependent phase shift.
+        n_times: Number of time samples per window.
+        sfreq: Sampling rate in Hz.
+        base_freq: Frequency of the shared oscillation in Hz.
+        amplitude: Amplitude of the shared oscillation.
+        noise: Standard deviation of the smoothed background noise.
+        seed: Seed for the generator RNG.
+
     Returns:
-    -------
-    X : (n_samples, n_channels, n_times) float32
-    y : (n_samples,) int64 labels in {0, 1}
+        Tuple ``(X, y)`` where ``X`` is a float32 array of shape
+        (n_samples, n_channels, n_times), standardized per window and
+        channel, and ``y`` is an int64 array of shape (n_samples,) with
+        labels in {0, 1}.
     """
     rng = np.random.default_rng(seed)
     t = np.arange(n_times) / sfreq

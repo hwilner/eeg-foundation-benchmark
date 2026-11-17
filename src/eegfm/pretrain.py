@@ -22,7 +22,21 @@ def pretrain_mae(
     """Pretrain `encoder` in place with channel-masked reconstruction.
 
     `mask_ratio` is the fraction of *channels* masked per window.
-    Returns the per-epoch mean reconstruction (MSE) loss history.
+
+    Args:
+        encoder: Encoder to pretrain; modified in place and left in eval
+            mode afterwards.
+        dataset: Dataset of unlabeled windows (e.g. `EEGWindowDataset`).
+        epochs: Number of passes over `dataset`.
+        batch_size: Windows per optimization step.
+        lr: Peak AdamW learning rate, cosine-annealed over `epochs`.
+        mask_ratio: Fraction of channels masked per window.
+        seed: Torch RNG seed, set before the decoder and mask token are
+            built so the whole run is reproducible.
+
+    Returns:
+        Per-epoch mean reconstruction (MSE) loss history, of length
+        `epochs`.
     """
     torch.manual_seed(seed)
     model = MaskedReconstructionModel(encoder)
@@ -50,16 +64,18 @@ def pretrain_mae(
 
 
 def train_test_split(X: np.ndarray, y: np.ndarray, test_frac: float = 0.3, seed: int = 0):
-    """Train test split.
+    """Split arrays into random train and test subsets.
 
     Args:
-        X (np.ndarray): X.
-        y (np.ndarray): y.
-        test_frac (float): test frac.
-        seed (int): seed.
+        X: Array of shape (n_samples, ...) to split along axis 0.
+        y: Label array of shape (n_samples,), split with the same
+            permutation as `X`.
+        test_frac: Fraction of samples assigned to the test subset.
+        seed: Seed for the permutation RNG.
 
     Returns:
-        The test split.
+        Tuple ``(X_train, X_test, y_train, y_test)`` with a `test_frac`
+        share of the samples in the test partition.
     """
     rng = np.random.default_rng(seed)
     idx = rng.permutation(len(X))

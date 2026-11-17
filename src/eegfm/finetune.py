@@ -30,6 +30,25 @@ def evaluate_linear_probe(
     standardized with train-set statistics before the linear head — this
     makes the small-sample probe optimization well-conditioned. With
     `freeze_encoder=False` the whole network is fine-tuned end-to-end.
+
+    Args:
+        encoder: Encoder to evaluate; a `LinearProbe` head is built on its
+            channel-pooled features.
+        X_train: Training windows of shape (n_train, n_channels, n_times).
+        y_train: Training labels of shape (n_train,).
+        X_test: Test windows of shape (n_test, n_channels, n_times).
+        y_test: Test labels of shape (n_test,) (unused; kept for a uniform
+            evaluation signature).
+        freeze_encoder: If True, freeze the encoder and train only the
+            linear head (linear probe); if False, fine-tune end-to-end.
+        epochs: Number of training passes over the labeled split.
+        batch_size: Windows per optimization step.
+        lr: Adam learning rate.
+        seed: Torch RNG seed, set before the probe head is built.
+
+    Returns:
+        Array of shape (n_test,) with the predicted probability of class 1
+        for each test window.
     """
     torch.manual_seed(seed)
     probe = LinearProbe(encoder, n_classes=2)
