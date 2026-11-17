@@ -24,7 +24,7 @@ from eegfm.pretrain import pretrain_mae
 
 
 def main() -> None:
-    """Main."""
+    """Parse CLI arguments and pretrain the encoder on staged windows."""
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--windows", type=Path, required=True,
                    help="Path to windows.npz produced by scripts/prepare_tueg.py.")

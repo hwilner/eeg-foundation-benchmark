@@ -24,7 +24,12 @@ from eegfm import tuh
 
 
 def main() -> None:
-    """Main."""
+    """Parse CLI arguments and stage an EDF corpus into windowed format.
+
+    Raises:
+        SystemExit: If neither ``--raw-root`` nor ``--public-demo`` is
+            given, with guidance on both access paths.
+    """
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--raw-root", type=Path, default=None,
                    help="Root of the raw TUH EDF tree (rsync'ed after DUA approval).")

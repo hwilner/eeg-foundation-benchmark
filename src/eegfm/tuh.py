@@ -68,8 +68,15 @@ def normalize_channel_name(label: str) -> str | None:
     """Normalize a raw EDF channel label to a canonical 10-20 name.
 
     Handles TUH conventions (``EEG FP1-REF``, ``EEG T3-REF``, ``FP1-LE``)
-    and dotted/BDF-style labels (``Fc5.``). Returns None for non-scalp
-    channels (ECG, EMG, annotations, earlobe references, ...).
+    and dotted/BDF-style labels (``Fc5.``).
+
+    Args:
+        label: Raw channel label as stored in the EDF header.
+
+    Returns:
+        The canonical 10-20 channel name, or None for non-scalp channels
+        (ECG, EMG, annotations, earlobe references, ...) and for scalp
+        channels outside the canonical montage.
     """
     lab = label.strip().upper()
     lab = re.sub(r"^EEG\s+", "", lab)
@@ -82,6 +89,21 @@ def normalize_channel_name(label: str) -> str | None:
 
 
 def _read_edf_pyedflib(path: Path):
+    """Read an EDF recording with pyedflib.
+
+    Args:
+        path: Path to the EDF file.
+
+    Returns:
+        Tuple ``(data, sfreq, labels)``: a (n_channels, n_samples) float64
+        array in microvolts as stored (truncated to the shortest channel if
+        channel lengths differ), the sampling rate in Hz, and the list of
+        raw channel labels.
+
+    Raises:
+        ValueError: If the recording has heterogeneous sampling rates
+            across channels.
+    """
     import pyedflib
 
     with pyedflib.EdfReader(str(path)) as f:
@@ -101,6 +123,15 @@ def _read_edf_pyedflib(path: Path):
 
 
 def _read_edf_mne(path: Path):
+    """Read an EDF recording with mne (fallback reader).
+
+    Args:
+        path: Path to the EDF file.
+
+    Returns:
+        Tuple ``(data, sfreq, labels)``: a (n_channels, n_samples) array,
+        the sampling rate in Hz, and the list of raw channel labels.
+    """
     import mne
 
     raw = mne.io.read_raw_edf(str(path), preload=True, verbose="ERROR")
@@ -110,14 +141,19 @@ def _read_edf_mne(path: Path):
 def read_edf(path: str | Path):
     """Read an EDF recording.
 
-    Returns:
-    -------
-    data : (n_channels, n_samples) float array (microvolts as stored)
-    sfreq : float sampling rate in Hz
-    channel_names : list of raw channel labels
+    Prefers `pyedflib` and falls back to `mne`.
 
-    Raises ImportError with install guidance if neither `pyedflib` nor
-    `mne` is available.
+    Args:
+        path: Path to the EDF file.
+
+    Returns:
+        Tuple ``(data, sfreq, channel_names)``: a (n_channels, n_samples)
+        float array in microvolts as stored, the sampling rate in Hz, and
+        the list of raw channel labels.
+
+    Raises:
+        ImportError: If neither `pyedflib` nor `mne` is installed, with
+            install guidance.
     """
     path = Path(path)
     try:
@@ -138,7 +174,17 @@ def read_edf(path: str | Path):
 
 
 def resample_signal(data: np.ndarray, sfreq: float, target_sfreq: float) -> np.ndarray:
-    """Polyphase-resample (n_channels, n_samples) to `target_sfreq` Hz."""
+    """Polyphase-resample a multi-channel signal to a target rate.
+
+    Args:
+        data: Array of shape (n_channels, n_samples).
+        sfreq: Current sampling rate in Hz.
+        target_sfreq: Desired sampling rate in Hz.
+
+    Returns:
+        Resampled array of shape (n_channels, n_samples * target_sfreq /
+        sfreq); `data` itself (unchanged) when the rates already match.
+    """
     if np.isclose(sfreq, target_sfreq):
         return data
     from scipy.signal import resample_poly
@@ -160,13 +206,28 @@ def window_recording(
     """Load one EDF recording and return standardized windows.
 
     Steps: read EDF -> map labels onto the canonical montage -> resample
-    -> per-window/channel standardization -> fixed-length windows.
+    -> fixed-length windows -> reproject onto the target montage ->
+    per-window/channel standardization.
+
+    Args:
+        path: Path to the EDF recording.
+        target_sfreq: Sampling rate in Hz after resampling.
+        window_sec: Window length in seconds.
+        step_sec: Window step in seconds; defaults to `window_sec`
+            (non-overlapping windows).
+        target_channels: Canonical montage the windows are reprojected onto.
+        min_matched_channels: Minimum number of canonical channels that must
+            be found in the recording.
 
     Returns:
-    -------
-    windows : (n_windows, len(target_channels), n_times) float32 array
-    info : dict with recording metadata (sfreq, duration_sec,
-    matched_channels, n_windows) for the manifest.
+        Tuple ``(windows, info)``: ``windows`` is a float32 array of shape
+        (n_windows, len(target_channels), n_times), and ``info`` is a dict
+        with recording metadata (sfreq, duration_sec, n_raw_channels,
+        n_matched_channels, matched_channels, n_windows) for the manifest.
+
+    Raises:
+        ValueError: If fewer than `min_matched_channels` canonical channels
+            are matched, or the recording is shorter than one window.
     """
     data, sfreq, labels = read_edf(path)
     norm = [normalize_channel_name(c) for c in labels]
@@ -210,7 +271,15 @@ def window_recording(
 
 
 def iter_edf_files(root: str | Path) -> list[Path]:
-    """Recursively list .edf files under `root` (sorted)."""
+    """Recursively list EDF files under a directory.
+
+    Args:
+        root: Directory to scan.
+
+    Returns:
+        Sorted list of paths with the ``.edf`` suffix (case-insensitive);
+        empty when `root` does not exist.
+    """
     root = Path(root)
     if not root.exists():
         return []
@@ -228,8 +297,21 @@ def build_manifest(
 
     Each readable recording yields one row: relative path, sfreq,
     duration, matched channel count, number of extracted windows, and
-    a status flag ("ok" or the error message). Raises
-    :class:`TUHDataNotFoundError` if no EDF files are found.
+    a status flag ("ok" or the error message).
+
+    Args:
+        root: Root of the EDF tree to scan.
+        target_sfreq: Sampling rate in Hz used when validating recordings.
+        window_sec: Window length in seconds.
+        step_sec: Window step in seconds; defaults to non-overlapping.
+        target_channels: Canonical montage for window extraction.
+
+    Returns:
+        Manifest DataFrame with one row per discovered EDF file.
+
+    Raises:
+        TUHDataNotFoundError: If no EDF files are found under `root`, with
+            a pointer to the data-access documentation.
     """
     root = Path(root)
     files = iter_edf_files(root)
@@ -266,9 +348,24 @@ def prepare_corpus(
 ) -> pd.DataFrame:
     """Stage an EDF corpus into the windowed training format.
 
-    Writes ``windows.npz`` (windows + recording index) and
-    ``manifest.csv`` to `out_dir`. Returns the manifest DataFrame.
-    Raises :class:`TUHDataNotFoundError` if the corpus is absent.
+    Args:
+        root: Root of the raw EDF tree.
+        out_dir: Output directory; receives ``windows.npz`` (windows,
+            recording index, channels, sampling rate) and ``manifest.csv``.
+        target_sfreq: Sampling rate in Hz after resampling.
+        window_sec: Window length in seconds.
+        step_sec: Window step in seconds; defaults to non-overlapping.
+        target_channels: Canonical montage for window extraction.
+        max_recordings: Optional cap on the number of staged recordings
+            (for smoke runs).
+
+    Returns:
+        The per-recording manifest DataFrame (also written to
+        ``manifest.csv``).
+
+    Raises:
+        TUHDataNotFoundError: If the corpus is absent, or if EDF files were
+            found but none passed integrity checks.
     """
     root, out_dir = Path(root), Path(out_dir)
     manifest = build_manifest(
@@ -315,6 +412,16 @@ def download_eegmmidb(
     account or DUA is required. It is used to validate the full
     pretrain/benchmark pipeline on real EEG while TUH access (signed
     DUA, see docs/DATA_ACCESS.md) is pending.
+
+    Args:
+        out_dir: Destination directory; created if missing. File names are
+            flattened (``S001/S001R01.edf`` -> ``S001_S001R01.edf``).
+        files: Recording paths relative to `base_url` to fetch.
+        base_url: Base URL of the eegmmidb release on PhysioNet.
+
+    Returns:
+        List of local paths to the downloaded (or already present) EDF
+        files, in the same order as `files`.
     """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
